@@ -25,9 +25,18 @@
             document.getElementsByTagName("head")[0].appendChild(script);
         }
         loadScript('script.js', function () {
-            test();
+            var mastutrack = new Mastutrack();
+            mastutrack.initialize({
+                apiKey: '584sdrsdsuhsdfhwugf'
+            })
+
         });
     </script>
+<script src="sdk.js" ></script>
+<script>
+    sdk('some arguments');
+</script>
+
 </head>
 
 <body>
