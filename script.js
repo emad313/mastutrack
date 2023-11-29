@@ -202,3 +202,17 @@ Mastutrack.prototype._trackEvent = function () {
         }
     };
 };
+
+// Send data to the server if buy any product from the website
+Mastutrack.prototype._trackPurchase = function () {
+    var data = {
+        type: "purchase",
+        data: {
+            category: "ecommerce",
+            action: "purchase",
+            label: "purchase",
+            value: 1,
+        },
+    };
+    // this._sendData(data);
+};
