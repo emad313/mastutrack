@@ -218,3 +218,18 @@ Mastutrack.prototype._trackPurchase = function () {
     console.log(data);
     // this._sendData(data);
 };
+
+// Send data to the server if add to cart any product from the website
+Mastutrack.prototype._trackAddToCart = function () {
+    var data = {
+        type: "add_to_cart",
+        data: {
+            category: "ecommerce",
+            action: "add_to_cart",
+            label: "add_to_cart",
+            value: 1,
+        },
+    };
+    console.log(data);
+    // this._sendData(data);
+};
