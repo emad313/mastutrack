@@ -233,3 +233,18 @@ Mastutrack.prototype._trackAddToCart = function () {
     console.log(data);
     // this._sendData(data);
 };
+
+// Send data to the server if remove from cart any product from the website
+Mastutrack.prototype._trackRemoveFromCart = function () {
+    var data = {
+        type: "remove_from_cart",
+        data: {
+            category: "ecommerce",
+            action: "remove_from_cart",
+            label: "remove_from_cart",
+            value: 1,
+        },
+    };
+    console.log(data);
+    // this._sendData(data);
+};
