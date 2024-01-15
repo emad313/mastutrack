@@ -182,6 +182,7 @@ Mastutrack.prototype._trackPageView = function () {
             language: navigator.language
         },
     };
+    console.log(data);
     // this._sendData(data);
 };
 
