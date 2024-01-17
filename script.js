@@ -8,8 +8,8 @@
 var Mastutrack = Mastutrack || {};
 // Variables for the SDK to use
 var apiKey = null;
-var get_details_url = "http://localhost:8080/api/v1/get_details";
-var track_url = "http://localhost:8080/api/v1/track";
+var get_details_url = "http://localhost:8080/api/tracker/v1/get-data";
+var track_url = "http://localhost:8080/api/tracker/v1/track-visit";
 var get_details = {};
 var ref_id_list = ["pat_ref", "pat", "via", "ref", "p", "from", "by", "deal", "go", "get"];
 var event = false;
