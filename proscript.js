@@ -62,16 +62,23 @@ Mastutrack.prototype._checkUrlParams = function () {
     }
 };
 
-Mastutrack.prototype._checkCookie = function (aid) {
-    var cookie = this._getCookie(aid);
+Mastutrack.prototype._checkRefCookie = function () {
+    var cookie = this._getCookie(_pat_ref_id);
+    if (cookie != null && cookie != "" && cookie != undefined) {
+        return true;
+    }
+};
+
+Mastutrack.prototype._checkCookie = function (name) {
+    var cookie = this._getCookie(name);
     if (cookie != null && cookie != "" && cookie != undefined) {
         return true;
     }
     return false;
 }
 
-Mastutrack.prototype._getCookie = function (aid) {
-    var name = aid + "=";
+Mastutrack.prototype._getCookie = function (name) {
+    var name = name + "=";
     var decodedCookie = decodeURIComponent(document.cookie);
     var ca = decodedCookie.split(';');
     for (var i = 0; i < ca.length; i++) {
@@ -84,6 +91,16 @@ Mastutrack.prototype._getCookie = function (aid) {
         }
     }
     return null;
+}
+
+Mastutrack.prototype._setRefCookie = function (ref_id, cookie_lifetime) {
+    var cookie_value = ref_id;
+    this._createCookie(_pat_ref_id, cookie_value, cookie_lifetime);
+}
+
+Mastutrack.prototype._setTrackIdCookie = function (track_id, cookie_lifetime) {
+    var cookie_value = track_id;
+    this._createCookie(_pat_track_id, cookie_value, cookie_lifetime);
 }
 
 Mastutrack.prototype._setCookie = function (aid) {
@@ -129,14 +146,12 @@ Mastutrack.prototype._checkCookieLifetime = function (aid) {
     return true;
 }
 
-Mastutrack.prototype._createCookie = function (aid, cookie_value, cookie_lifetime) {
+Mastutrack.prototype._createCookie = function (name, cookie_value, cookie_lifetime) {
     var d = new Date();
     d.setTime(d.getTime() + (cookie_lifetime * 24 * 60 * 60 * 1000));
     var expires = "expires=" + d.toUTCString();
-    document.cookie = aid + "=" + JSON.stringify(cookie_value) + ";" + expires + ";path=/";
+    document.cookie = name + "=" + JSON.stringify(cookie_value) + ";" + expires + ";path=/";
 }
-
-
 
 Mastutrack.prototype._trackPageView = function () {
     var cookie = this._getCookie(_aid);
