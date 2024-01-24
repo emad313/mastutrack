@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
-    <script>
+    <!-- <script>
         function loadScript(url, callback) {
             var script = document.createElement("script")
             script.type = "text/javascript";
@@ -32,25 +32,27 @@
             })
 
         });
+    </script> -->
+    <!-- <script>
+        sdk('some arguments');
     </script>
-<!-- <script src="sdk.js" ></script>
+        <script src="sdk.js" ></script> -->
+        <script src="proscript.js" ></script>
 <script>
-    sdk('some arguments');
-</script> -->
-
+        Mastutrack._init({
+        aid: '584sdrsdsuhsdfhwugf',
+        event: 'visit',
+    });
+    
+</script>
 </head>
 
-<!-- <body>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <h1>Home</h1>
-                <button >Click me</button>
-                <a href="about.html">About</a>
-                <a href="#">sdsadd</a>
-            </div>
-        </div>
-    </div>
-</body> -->
+<body>
+    <h1>Home</h1>
+    <a href="about.php">About</a>
+    <a href="contact.php">Contact</a>
+    <a href="login.php">Login</a>
+    <a href="register.php">Register</a>
+</body>
 
 </html>
