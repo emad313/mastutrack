@@ -87,28 +87,27 @@ Mastutrack.prototype._setCookie = function (cName, cookie_value, cookie_lifetime
 }
 
 Mastutrack.prototype._getCookie = function (cName) {
-    // var name = cName + "=";
-    // var decodedCookie = decodeURIComponent(document.cookie);
-    // var ca = decodedCookie.split(';');
-    // for (var i = 0; i < ca.length; i++) {
-    //     var c = ca[i];
-    //     while (c.charAt(0) == ' ') {
-    //         c = c.substring(1);
-    //     }
-    //     if (c.indexOf(name) == 0) {
-    //         return c.substring(name.length, c.length);
-    //     }
-    // }
-    // return null;
-    return 'kala1858';
+    var name = cName + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return null;
 }
 
 Mastutrack.prototype._checkCookie = function (cName) {
-    // var cookie = this._getCookie(cName);
-    // if (cookie != null && cookie != "" && cookie != undefined) {
+    var cookie = this._getCookie(cName);
+    if (cookie != null && cookie != "" && cookie != undefined) {
         return true;
-    // }
-    // return false;
+    }
+    return false;
 }
 
 Mastutrack.prototype._deleteCookie = function (cName) {
