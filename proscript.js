@@ -1,14 +1,18 @@
 var Mastutrack = Mastutrack || {};
 
 var _aid = null;
-var _event = 'visit';
+var _state = 'visit';
 var _get_details_url = "http://localhost:8000/api/tracker/v1/get-data";
 var _track_url = "http://localhost:8000/api/tracker/v1/track-visit";
+var _track_lead = "http://localhost:8000/api/tracker/v1/track-signup";
 var _get_details = {};
 var _ref_id_list = ["pat_ref", "pat", "via", "ref", "p", "from", "by", "deal", "go", "get"];
 var _pat_ref_id = '_pat_ref_id';
 var _pat_track_id = '_pat_track_id';
 var _pat_details = '_pat_details';
+var _pat_page_url = window.location.href;
+var _pat_referrer = document.referrer == "" ? '/' : document.referrer;
+var _origin = window.location.origin;
 
 Mastutrack = function () {
 
@@ -16,38 +20,50 @@ Mastutrack = function () {
 
 Mastutrack.prototype._init = function ({
     aid = null,
-    event = 'visit',
+    state = 'visit',
 }) {
     _aid = aid;
-    _event = event;
+    _state = state;
+
     this._callFunctions(aid);
 };
 
 Mastutrack.prototype._callFunctions = function (aid) {
-    if (aid != null && aid != "" && aid != undefined
-        && this._checkUrlParams() != undefined
-        && this._checkUrlParams().ref_id != undefined
-        && this._checkUrlParams().ref_id != ""
-        && this._checkUrlParams().ref_id != null
-        && this._checkUrlParams().ref_id_type != undefined
-        && this._checkUrlParams().ref_id_type != ""
-        && this._checkUrlParams().ref_id_type != null) {
-        if (this._checkCookie(aid)) {
-            // if (this._checkCookieLifetime(aid)) {
-            //     // Send data to the server
-            // } else {
-            //     this._setCookie(aid);
-            // }
+    if (this._isNotEmpty(aid) && this._isNotEmpty(this._checkUrlParams())
+        &&this._isNotEmpty(this._checkUrlParams().ref_id) && this._isNotEmpty(this._checkUrlParams().ref_id_type)) {
+        if (this._checkCookie(_pat_ref_id) && this._checkCookie(_pat_track_id)) {
+            if (this._checkUrlParams().ref_id !== this._getCookie(_pat_ref_id)) {
+                this._trackPageView();
+            } else {
+                // If cookie are same then check cookie life time and update cookie
+            }
         } else {
-            // this._setCookie(aid);
+            this._trackPageView()
         }
     }
-    // if (aid != null && aid != "" && aid != undefined) {
-    //     this._trackPageView();
-    //     if (_event) {
-    //         this._trackEvent();
-    //     }
-    // }
+};
+
+Mastutrack.prototype.lead = function ({
+    email = null,
+    uid = null,
+    plan = null,
+    affiliate_code = null,
+    track_id = null,
+}) {
+    if (this._isNotEmpty(email) || this._isNotEmpty(uid)) {
+        if (this._checkCookie(_pat_ref_id) && this._checkCookie(_pat_track_id)){
+            this._trackLead(email, uid, plan);
+        }else{
+            if (this._isNotEmpty(affiliate_code) || this._isNotEmpty(track_id)) {
+                this._trackLead(email, uid, plan, affiliate_code, track_id);
+            }
+        }
+    }
+};
+
+// Variable check function if empty or not null or undefined
+Mastutrack.prototype._isNotEmpty = function (variable) {
+    return ((variable != null && variable != "" && variable != undefined) ? true : false);
 };
 
 Mastutrack.prototype._checkUrlParams = function () {
@@ -60,122 +76,108 @@ Mastutrack.prototype._checkUrlParams = function () {
             };
         };
     }
+    return undefined;
 };
 
-Mastutrack.prototype._checkRefCookie = function () {
-    var cookie = this._getCookie(_pat_ref_id);
-    if (cookie != null && cookie != "" && cookie != undefined) {
-        return true;
-    }
-};
-
-Mastutrack.prototype._checkCookie = function (name) {
-    var cookie = this._getCookie(name);
-    if (cookie != null && cookie != "" && cookie != undefined) {
-        return true;
-    }
-    return false;
-}
-
-Mastutrack.prototype._getCookie = function (name) {
-    var name = name + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var ca = decodedCookie.split(';');
-    for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == ' ') {
-            c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-            return JSON.parse(c.substring(name.length, c.length));
-        }
-    }
-    return null;
-}
-
-Mastutrack.prototype._setRefCookie = function (ref_id, cookie_lifetime) {
-    var cookie_value = ref_id;
-    this._createCookie(_pat_ref_id, cookie_value, cookie_lifetime);
-}
-
-Mastutrack.prototype._setTrackIdCookie = function (track_id, cookie_lifetime) {
-    var cookie_value = track_id;
-    this._createCookie(_pat_track_id, cookie_value, cookie_lifetime);
-}
-
-Mastutrack.prototype._setCookie = function (aid) {
-    var data = this._getData(_get_details_url, aid);
-    if (this._isEmpty(data) == false) {
-        var params = this._checkUrlParams();
-        var cookie_value = {
-            campaign_name: data.campaign_name,
-            ref_id: params.ref_id,
-            ref_id_type: params.ref_id_type,
-            cookie_lifetime: data.cookie_lifetime,
-            cookie_created_at: new Date().getTime(),
-            cookie_updated_at: new Date().getTime(),
-        };
-        this._createCookie(aid, cookie_value, data.cookie_lifetime);
-    }
-}
-
-Mastutrack.prototype._getData = function (url, aid) {
-    var data = {};
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url + "?aid=" + aid, false);
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState == 4) {
-            data = JSON.parse(xhr.responseText);
-        }
-    }
-    xhr.send();
-    return data;
-}
-
-
-
-Mastutrack.prototype._checkCookieLifetime = function (aid) {
-    var cookie = this._getCookie(aid);
-    var cookie_lifetime = cookie.cookie_lifetime;
-    var cookie_created_at = cookie.cookie_created_at;
-    var cookie_updated_at = cookie.cookie_updated_at;
-    var current_time = new Date().getTime();
-    if (current_time - cookie_updated_at > cookie_lifetime) {
-        return false;
-    }
-    return true;
-}
-
-Mastutrack.prototype._createCookie = function (name, cookie_value, cookie_lifetime) {
-    var d = new Date();
+Mastutrack.prototype._setCookie = function (cName, cookie_value, cookie_lifetime) {
+    const d = new Date();
     d.setTime(d.getTime() + (cookie_lifetime * 24 * 60 * 60 * 1000));
     var expires = "expires=" + d.toUTCString();
-    document.cookie = name + "=" + JSON.stringify(cookie_value) + ";" + expires + ";path=/";
+    document.cookie = cName + "=" + cookie_value + ";" + expires + ";path=/";
+}
+
+Mastutrack.prototype._getCookie = function (cName) {
+    // var name = cName + "=";
+    // var decodedCookie = decodeURIComponent(document.cookie);
+    // var ca = decodedCookie.split(';');
+    // for (var i = 0; i < ca.length; i++) {
+    //     var c = ca[i];
+    //     while (c.charAt(0) == ' ') {
+    //         c = c.substring(1);
+    //     }
+    //     if (c.indexOf(name) == 0) {
+    //         return c.substring(name.length, c.length);
+    //     }
+    // }
+    // return null;
+    return 'kala1858';
+}
+
+Mastutrack.prototype._checkCookie = function (cName) {
+    // var cookie = this._getCookie(cName);
+    // if (cookie != null && cookie != "" && cookie != undefined) {
+        return true;
+    // }
+    // return false;
+}
+
+Mastutrack.prototype._deleteCookie = function (cName) {
+    document.cookie = cName + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+}
+
+Mastutrack.prototype._trackIdGenerator = function () {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (var i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    if (this._getCookie(_pat_track_id) == text) {
+        this._trackIdGenerator();
+    }
+    return text;
 }
 
 Mastutrack.prototype._trackPageView = function () {
-    var cookie = this._getCookie(_aid);
-    var data = {
-        aid: _aid,
-        campaign_name: cookie.campaign_name,
-        ref_id: cookie.ref_id,
-        ref_id_type: cookie.ref_id_type,
-        event: 'visit',
-        url: window.location.href,
-        title: document.title,
-        domain: window.location.hostname,
-        path: window.location.pathname,
-        query_string: window.location.search,
-        user_agent: navigator.userAgent,
-        referrer: document.referrer,
-        cookie_lifetime: cookie.cookie_lifetime,
-        cookie_created_at: cookie.cookie_created_at,
-        cookie_updated_at: cookie.cookie_updated_at,
+    var bodyData = {
+        account_id: _aid,
+        affiliate_code: this._checkUrlParams().ref_id,
+        track_id: this._trackIdGenerator(),
+        page_url: _pat_page_url,
+        refferrer_url: _pat_referrer,
+        domain: _origin,
+        state: _state,
+        cookie_ref_id: this._getCookie(_pat_ref_id),
+        cookie_track_id: this._getCookie(_pat_track_id),
+    };
+    let _this = this;
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", _track_url, true);
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.send(JSON.stringify(bodyData));
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+            var response = JSON.parse(xhr.responseText).data;
+            // Set Cookies function here
+            if (_this._checkCookie(_pat_ref_id) && _this._checkCookie(_pat_track_id)) {
+                _this._deleteCookie(_pat_ref_id);
+                _this._deleteCookie(_pat_track_id);
+            }
+            _this._setCookie(_pat_ref_id, response.affiliate_code, response.cookie_lifetime);
+            _this._setCookie(_pat_track_id, response.track_id, response.cookie_lifetime);
+        }
+    }
+}
+
+Mastutrack.prototype._trackLead = function (customer_email, customer_uid, plan, affiliate_code = null, track_id = null) {
+    var bodyData = {
+        account_id: _aid,
+        affiliate_code: affiliate_code == null ? this._getCookie(_pat_ref_id) : affiliate_code,
+        track_id: track_id == null ? this._trackIdGenerator() : track_id,
+        page_url: _pat_page_url,
+        refferrer_url: _pat_referrer,
+        customer_email: customer_email,
+        customer_uid: customer_uid,
+        plan: plan,
     };
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", _track_url, false);
+    xhr.open("POST", _track_lead, true);
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    xhr.send(JSON.stringify(data));
+    xhr.send(JSON.stringify(bodyData));
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+            console.log(xhr.responseText);
+        }
+    }
 }
 
 window.Mastutrack = new Mastutrack();
