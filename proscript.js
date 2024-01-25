@@ -120,6 +120,7 @@ Mastutrack.prototype._trackPageView = function () {
         cookie_ref_id: this._getCookie(_pat_ref_id),
         cookie_track_id: this._getCookie(_pat_track_id),
     };
+    let _this = this;
     var xhr = new XMLHttpRequest();
     xhr.open("POST", _track_url, true);
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -128,12 +129,12 @@ Mastutrack.prototype._trackPageView = function () {
         if (xhr.readyState == 4) {
             var response = JSON.parse(xhr.responseText).data;
             // Set Cookies function here
-            if (this._checkCookie(_pat_ref_id) && this._checkCookie(_pat_track_id)) {
-                this._deleteCookie(_pat_ref_id);
-                this._deleteCookie(_pat_track_id);
+            if (_this._checkCookie(_pat_ref_id) && _this._checkCookie(_pat_track_id)) {
+                _this._deleteCookie(_pat_ref_id);
+                _this._deleteCookie(_pat_track_id);
             }
-            this._setCookie(_pat_ref_id, response.affiliate_code, response.cookie_lifetime);
-            this._setCookie(_pat_track_id, response.track_id, response.cookie_lifetime);
+            _this._setCookie(_pat_ref_id, response.affiliate_code, response.cookie_lifetime);
+            _this._setCookie(_pat_track_id, response.track_id, response.cookie_lifetime);
         }
     }
 }
