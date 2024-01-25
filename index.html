@@ -43,7 +43,12 @@
         aid: 'FWQArHwFa5cK',
         state: 'visit',
     });
-    
+    function trackLead() {
+        Mastutrack.lead({
+            email: 'customer@example.com',
+            uid: 'cus_123',
+        });
+    }
 </script>
 </head>
 
@@ -52,6 +57,9 @@
     <div>
         Home page
     </div>
+    <button onclick="trackLead()">
+        Track Lead
+    </button>
 </body>
 
 </html>

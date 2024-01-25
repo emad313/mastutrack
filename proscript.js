@@ -4,6 +4,7 @@ var _aid = null;
 var _state = 'visit';
 var _get_details_url = "http://localhost:8000/api/tracker/v1/get-data";
 var _track_url = "http://localhost:8000/api/tracker/v1/track-visit";
+var _track_lead = "http://localhost:8000/api/tracker/v1/track-signup";
 var _get_details = {};
 var _ref_id_list = ["pat_ref", "pat", "via", "ref", "p", "from", "by", "deal", "go", "get"];
 var _pat_ref_id = '_pat_ref_id';
@@ -28,14 +29,8 @@ Mastutrack.prototype._init = function ({
 };
 
 Mastutrack.prototype._callFunctions = function (aid) {
-    if (aid != null && aid != "" && aid != undefined
-        && this._checkUrlParams() != undefined
-        && this._checkUrlParams().ref_id != undefined
-        && this._checkUrlParams().ref_id != ""
-        && this._checkUrlParams().ref_id != null
-        && this._checkUrlParams().ref_id_type != undefined
-        && this._checkUrlParams().ref_id_type != ""
-        && this._checkUrlParams().ref_id_type != null) {
+    if (this._isNotEmpty(aid) && this._isNotEmpty(this._checkUrlParams())
+        &&this._isNotEmpty(this._checkUrlParams().ref_id) && this._isNotEmpty(this._checkUrlParams().ref_id_type)) {
         if (this._checkCookie(_pat_ref_id) && this._checkCookie(_pat_track_id)) {
             if (this._checkUrlParams().ref_id !== this._getCookie(_pat_ref_id)) {
                 this._trackPageView();
@@ -46,6 +41,29 @@ Mastutrack.prototype._callFunctions = function (aid) {
             this._trackPageView()
         }
     }
+};
+
+Mastutrack.prototype.lead = function ({
+    email = null,
+    uid = null,
+    plan = null,
+    affiliate_code = null,
+    track_id = null,
+}) {
+    if (this._isNotEmpty(email) || this._isNotEmpty(uid)) {
+        if (this._checkCookie(_pat_ref_id) && this._checkCookie(_pat_track_id)){
+            this._trackLead(email, uid, plan);
+        }else{
+            if (this._isNotEmpty(affiliate_code) || this._isNotEmpty(track_id)) {
+                this._trackLead(email, uid, plan, affiliate_code, track_id);
+            }
+        }
+    }
+};
+
+// Variable check function if empty or not null or undefined
+Mastutrack.prototype._isNotEmpty = function (variable) {
+    return ((variable != null && variable != "" && variable != undefined) ? true : false);
 };
 
 Mastutrack.prototype._checkUrlParams = function () {
@@ -69,27 +87,28 @@ Mastutrack.prototype._setCookie = function (cName, cookie_value, cookie_lifetime
 }
 
 Mastutrack.prototype._getCookie = function (cName) {
-    var name = cName + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var ca = decodedCookie.split(';');
-    for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == ' ') {
-            c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-            return c.substring(name.length, c.length);
-        }
-    }
-    return null;
+    // var name = cName + "=";
+    // var decodedCookie = decodeURIComponent(document.cookie);
+    // var ca = decodedCookie.split(';');
+    // for (var i = 0; i < ca.length; i++) {
+    //     var c = ca[i];
+    //     while (c.charAt(0) == ' ') {
+    //         c = c.substring(1);
+    //     }
+    //     if (c.indexOf(name) == 0) {
+    //         return c.substring(name.length, c.length);
+    //     }
+    // }
+    // return null;
+    return 'kala1858';
 }
 
 Mastutrack.prototype._checkCookie = function (cName) {
-    var cookie = this._getCookie(cName);
-    if (cookie != null && cookie != "" && cookie != undefined) {
+    // var cookie = this._getCookie(cName);
+    // if (cookie != null && cookie != "" && cookie != undefined) {
         return true;
-    }
-    return false;
+    // }
+    // return false;
 }
 
 Mastutrack.prototype._deleteCookie = function (cName) {
@@ -135,6 +154,28 @@ Mastutrack.prototype._trackPageView = function () {
             }
             _this._setCookie(_pat_ref_id, response.affiliate_code, response.cookie_lifetime);
             _this._setCookie(_pat_track_id, response.track_id, response.cookie_lifetime);
+        }
+    }
+}
+
+Mastutrack.prototype._trackLead = function (customer_email, customer_uid, plan, affiliate_code = null, track_id = null) {
+    var bodyData = {
+        account_id: _aid,
+        affiliate_code: affiliate_code == null ? this._getCookie(_pat_ref_id) : affiliate_code,
+        track_id: track_id == null ? this._trackIdGenerator() : track_id,
+        page_url: _pat_page_url,
+        refferrer_url: _pat_referrer,
+        customer_email: customer_email,
+        customer_uid: customer_uid,
+        plan: plan,
+    };
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", _track_lead, true);
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.send(JSON.stringify(bodyData));
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+            console.log(xhr.responseText);
         }
     }
 }
