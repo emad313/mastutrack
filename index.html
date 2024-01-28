@@ -40,13 +40,22 @@
         <script src="proscript.js" ></script>
 <script>
         Mastutrack._init({
-        aid: 'FWQArHwFa5cK',
+        aid: 'iHrRGXx00gZd',
         state: 'visit',
     });
     function trackLead() {
         Mastutrack.lead({
             email: 'customer@example.com',
             uid: 'cus_123',
+        });
+    }
+    function trackSale() {
+        Mastutrack.sale({
+            email: 'customer@example.com',
+            uid: 'cus_123',
+            amount: 100,
+            event: '_event123',
+            plan: 'starter',
         });
     }
 </script>
@@ -59,6 +68,9 @@
     </div>
     <button onclick="trackLead()">
         Track Lead
+    </button>
+    <button onclick="trackSale()">
+        Track Sale
     </button>
 </body>
 
