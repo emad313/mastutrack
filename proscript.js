@@ -5,6 +5,7 @@ var _state = 'visit';
 var _get_details_url = "http://localhost:8000/api/tracker/v1/get-data";
 var _track_url = "http://localhost:8000/api/tracker/v1/track-visit";
 var _track_lead = "http://localhost:8000/api/tracker/v1/track-signup";
+var _track_sale = "http://localhost:8000/api/tracker/v1/track-sale";
 var _get_details = {};
 var _ref_id_list = ["pat_ref", "pat", "via", "ref", "p", "from", "by", "deal", "go", "get"];
 var _pat_ref_id = '_pat_ref_id';
@@ -30,7 +31,7 @@ Mastutrack.prototype._init = function ({
 
 Mastutrack.prototype._callFunctions = function (aid) {
     if (this._isNotEmpty(aid) && this._isNotEmpty(this._checkUrlParams())
-        &&this._isNotEmpty(this._checkUrlParams().ref_id) && this._isNotEmpty(this._checkUrlParams().ref_id_type)) {
+        && this._isNotEmpty(this._checkUrlParams().ref_id) && this._isNotEmpty(this._checkUrlParams().ref_id_type)) {
         if (this._checkCookie(_pat_ref_id) && this._checkCookie(_pat_track_id)) {
             if (this._checkUrlParams().ref_id !== this._getCookie(_pat_ref_id)) {
                 this._trackPageView();
@@ -61,6 +62,28 @@ Mastutrack.prototype.lead = function ({
     }
 };
 
+Mastutrack.prototype.sale = function ({
+    email = null,
+    uid = null,
+    plan = null,
+    affiliate_code = null,
+    track_id = null,
+    amount = null,
+    event = null,
+    quantity = null,
+}){
+    if ((this._isNotEmpty(email) || this._isNotEmpty(uid)) && this._isNotEmpty(amount) && this._isNotEmpty(event)) {
+        if (this._checkCookie(_pat_ref_id) && this._checkCookie(_pat_track_id)) {
+            this._trackSale(email, uid, plan, null, null, amount, event, quantity);
+        }else{
+            if(this._isNotEmpty(affiliate_code) || this._isNotEmpty(track_id)) {
+                this._trackSale(email, uid, plan, affiliate_code, track_id, amount, event, quantity);
+            }
+        }
+    }
+
+};
+
 // Variable check function if empty or not null or undefined
 Mastutrack.prototype._isNotEmpty = function (variable) {
     return ((variable != null && variable != "" && variable != undefined) ? true : false);
@@ -87,27 +110,28 @@ Mastutrack.prototype._setCookie = function (cName, cookie_value, cookie_lifetime
 }
 
 Mastutrack.prototype._getCookie = function (cName) {
-    var name = cName + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var ca = decodedCookie.split(';');
-    for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == ' ') {
-            c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-            return c.substring(name.length, c.length);
-        }
-    }
-    return null;
+    // var name = cName + "=";
+    // var decodedCookie = decodeURIComponent(document.cookie);
+    // var ca = decodedCookie.split(';');
+    // for (var i = 0; i < ca.length; i++) {
+    //     var c = ca[i];
+    //     while (c.charAt(0) == ' ') {
+    //         c = c.substring(1);
+    //     }
+    //     if (c.indexOf(name) == 0) {
+    //         return c.substring(name.length, c.length);
+    //     }
+    // }
+    // return null;
+    return 'dhaka5442'
 }
 
 Mastutrack.prototype._checkCookie = function (cName) {
-    var cookie = this._getCookie(cName);
-    if (cookie != null && cookie != "" && cookie != undefined) {
+    // var cookie = this._getCookie(cName);
+    // if (cookie != null && cookie != "" && cookie != undefined) {
         return true;
-    }
-    return false;
+    // }
+    // return false;
 }
 
 Mastutrack.prototype._deleteCookie = function (cName) {
@@ -161,7 +185,7 @@ Mastutrack.prototype._trackLead = function (customer_email, customer_uid, plan, 
     var bodyData = {
         account_id: _aid,
         affiliate_code: affiliate_code == null ? this._getCookie(_pat_ref_id) : affiliate_code,
-        track_id: track_id == null ? this._trackIdGenerator() : track_id,
+        track_id: track_id == null ? this._getCookie(_pat_track_id) : track_id,
         page_url: _pat_page_url,
         refferrer_url: _pat_referrer,
         customer_email: customer_email,
@@ -177,6 +201,35 @@ Mastutrack.prototype._trackLead = function (customer_email, customer_uid, plan, 
             console.log(xhr.responseText);
         }
     }
+}
+
+Mastutrack.prototype._trackSale = function (customer_email, customer_uid, plan, 
+    affiliate_code = null, 
+    track_id = null, 
+    amount, 
+    event, 
+    quantity = null){
+    var bodyData = {
+        account_id: _aid,
+        affiliate_code: affiliate_code == null ? this._getCookie(_pat_ref_id) : affiliate_code,
+        track_id: track_id == null ? this._getCookie(_pat_track_id) : track_id,
+        customer_email: customer_email,
+        customer_uid: customer_uid,
+        plan: plan,
+        amount: amount.toFixed(2),
+        event: event,
+        quantity: quantity,
+    };
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", _track_sale, true);
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.send(JSON.stringify(bodyData));
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+            console.log(xhr.responseText);
+        }
+    }
+
 }
 
 window.Mastutrack = new Mastutrack();
