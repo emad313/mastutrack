@@ -123,7 +123,7 @@ Mastutrack.prototype._getCookie = function (cName) {
     //     }
     // }
     // return null;
-    return 'kala1858'
+    return 'hello9693'
 }
 
 Mastutrack.prototype._checkCookie = function (cName) {
@@ -216,7 +216,7 @@ Mastutrack.prototype._trackSale = function (customer_email, customer_uid, plan,
         customer_email: customer_email,
         customer_uid: customer_uid,
         plan: plan,
-        amount: amount.toFixed(2),
+        amount: Number(amount).toFixed(2),
         event: event,
         quantity: quantity,
     };
